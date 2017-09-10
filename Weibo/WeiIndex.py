@@ -7,7 +7,7 @@ import requests
 import xlrd
 
 Rootdir = os.path.abspath(os.path.dirname(os.getcwd()))
-Exceldir = Rootdir + r"\Dataset\登峰杯播放社交全.xls"
+Exceldir = Rootdir + r"\Dataset\播放社交全.xls"
 Sheet = "Sheet1"
 date_start = "2014-01-01"
 date_stop = "2017-07-09"
