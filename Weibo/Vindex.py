@@ -7,7 +7,7 @@ import requests
 import xlrd
 
 Rootdir = os.path.abspath(os.path.dirname(os.getcwd()))
-Exceldir = Rootdir + r"\Dataset\播放社交全.xls"
+Exceldir = Rootdir + r"\Dataset\Scalars.xlsx"
 Sheet = "Sheet1"
 date_start = "2014-01-01"
 date_stop = "2017-07-09"
@@ -21,6 +21,9 @@ def read_xls_file(directory, sheet):
 
 
 def savejson(soapname, data):
+    if data == "none":
+        print(soapname, "未收录")
+        return
     fl = open('../OutPut/figures/' + soapname + '.json', 'w')
     fl.write(json.dumps(data, ensure_ascii=False, indent=2))
     fl.close()
@@ -38,11 +41,13 @@ def search_name(name):
     urlname = parse.quote(name)
     # 将{}替换为关键词
     first_requests = url_format.format(urlname)
-    print(first_requests)
+    # print(first_requests)
 
     codes = requests.get(first_requests, headers=cookie_header).json()
 
     print(codes)
+    if codes["data"] == "null":
+        return "none"
 
     # 获取关键词代码
     ids = codes["data"]["id"]
@@ -73,7 +78,10 @@ def search_name(name):
     # getdate?month=3&_rnd=时间戳
     # ?month为月份跨度
     print(codes)
-    codes = requests.get("http://data.weibo.com/index/ajax/getchartdata?wid={}&sdate=2017-01-01&edate=2017-10-30".format(ids, sdate, edate), headers=header).json()
+    codes = requests.get(
+        "http://data.weibo.com/index/ajax/getchartdata?wid={}&sdate=2017-01-01&edate=2017-10-30".format(ids, sdate,
+                                                                                                        edate),
+        headers=header).json()
 
     return codes
 
@@ -89,10 +97,7 @@ def search_name(name):
 
 if __name__ == "__main__":
     # 自动爬取新浪微博微指数，结果保存于Output/14to17
-    dataless = ["女管家", "飘洋过海来看你", "守护丽人"]
-    figures = {"杨幂", "刘涛"}
-    for figure in figures:
-        savejson(figure, search_name(figure))
+    dramas = read_xls_file(Exceldir, Sheet)
     # 以上为未收录数据
     # presoap = ["楚乔传", "醉玲珑", "我的前半生", "上古情歌"]
     # for soap in presoap:
@@ -105,13 +110,10 @@ if __name__ == "__main__":
     #     print(soap + "已保存")
 
     # print("已完成")
-    # for soap in read_xls_file(Exceldir, Sheet):
-    #     if os.path.exists('../OutPut/14to17/' + soap + '.json'):
-    #         print(soap + "已保存过")
-    #         continue
-    #     if soap == "" or dataless.__contains__(soap):
-    #         # 爱情公寓四未收录，以爱情公寓为关键词查询
-    #         continue
-    #     savejson(soap, search_name(soap))
-    #     print(soap + "已保存")
+    for drama in dramas[1:]:
+        if os.path.exists('../Output/figures/' + drama + '.json'):
+            print(drama + "已保存过")
+            continue
+        savejson(drama, search_name(drama))
+        print(drama + "已保存")
     print("已完成")
